@@ -61,7 +61,6 @@ pub fn initialize_available_targets() {
         LLVMInitializeXCoreTarget,
         LLVMInitializeXCoreTargetMC,
         LLVMInitializeXCoreAsmPrinter,
-        LLVMInitializeXCoreAsmParser
     );
     init_target!(
         llvm_component = "x86",
