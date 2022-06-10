@@ -184,6 +184,12 @@ void LLVMRustAddLastExtensionPasses(
                              AddExtensionPasses);
 }
 
+#ifdef LLVM_COMPONENT_XCORE
+#define SUBTARGET_XCORE SUBTARGET(XCORE)
+#else
+#define SUBTARGET_XCORE
+#endif
+
 #ifdef LLVM_COMPONENT_X86
 #define SUBTARGET_X86 SUBTARGET(X86)
 #else
@@ -257,6 +263,7 @@ void LLVMRustAddLastExtensionPasses(
 #endif
 
 #define GEN_SUBTARGETS                                                         \
+  SUBTARGET_XCORE                                                              \
   SUBTARGET_X86                                                                \
   SUBTARGET_ARM                                                                \
   SUBTARGET_AARCH64                                                            \
