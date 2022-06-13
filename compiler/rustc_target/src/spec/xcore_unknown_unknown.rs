@@ -3,7 +3,7 @@ use crate::spec::{Target, TargetOptions};
 
 pub fn target() -> Target {
     Target {
-        data_layout: "e-m:e-p:32:32-i64:64-n32-S128".to_string(),
+        data_layout: "e-m:e-p:32:32-i1:8:32-i8:8:32-i16:16:32-i64:64-f64:64-v64:32-v128:32-a:0:32-i128:64-n32".to_string(),
         llvm_target: "xcore".to_string(),
         pointer_width: 32,
         arch: "xcore".to_string(),
