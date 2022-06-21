@@ -626,7 +626,7 @@ fn reg_to_llvm(reg: InlineAsmRegOrRegClass, layout: Option<&TyAndLayout<'_>>) ->
             }
         }
         InlineAsmRegOrRegClass::RegClass(reg) => match reg {
-            InlineAsmRegClass::XCore(XCore::reg) => "r",
+            InlineAsmRegClass::XCore(XCoreInlineAsmRegClass::reg) => "r",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::reg) => "r",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg) => "w",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg_low16) => "x",
