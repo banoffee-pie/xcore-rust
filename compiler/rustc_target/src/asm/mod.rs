@@ -241,7 +241,7 @@ impl FromStr for InlineAsmArch {
     HashStable_Generic
 )]
 pub enum InlineAsmReg {
-    X86(XCoreInlineAsmReg),
+    XCore(XCoreInlineAsmReg),
     X86(X86InlineAsmReg),
     Arm(ArmInlineAsmReg),
     AArch64(AArch64InlineAsmReg),
