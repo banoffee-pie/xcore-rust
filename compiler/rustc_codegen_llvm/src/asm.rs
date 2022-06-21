@@ -778,7 +778,7 @@ fn modifier_to_llvm(
 /// the type is, as long as it is valid for the constraint code.
 fn dummy_output_type<'ll>(cx: &CodegenCx<'ll, '_>, reg: InlineAsmRegClass) -> &'ll Type {
     match reg {
-        InlineAsmRegClass::Mips(XCoreInlineAsmRegClass::reg) => cx.type_i32(),
+        InlineAsmRegClass::XCore(XCoreInlineAsmRegClass::reg) => cx.type_i32(),
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::reg) => cx.type_i32(),
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg)
         | InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg_low16) => {
