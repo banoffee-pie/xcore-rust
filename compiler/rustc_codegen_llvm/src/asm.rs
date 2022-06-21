@@ -301,6 +301,7 @@ impl<'ll, 'tcx> AsmBuilderMethods<'tcx> for Builder<'_, 'll, 'tcx> {
         constraints.append(&mut clobbers);
         if !options.contains(InlineAsmOptions::PRESERVES_FLAGS) {
             match asm_arch {
+                InlineAsmArch::XCore => {}
                 InlineAsmArch::AArch64 | InlineAsmArch::Arm => {
                     constraints.push("~{cc}".to_string());
                 }
