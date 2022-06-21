@@ -720,7 +720,7 @@ pub fn allocatable_registers(
 ) -> FxHashMap<InlineAsmRegClass, FxHashSet<InlineAsmReg>> {
     match arch {
         InlineAsmArch::XCore => {
-            let mut map = XCore::regclass_map();
+            let mut map = xcore::regclass_map();
             XCore::fill_reg_map(arch, has_feature, target, &mut map);
             map
         }
