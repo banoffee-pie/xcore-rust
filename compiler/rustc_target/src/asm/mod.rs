@@ -721,7 +721,7 @@ pub fn allocatable_registers(
     match arch {
         InlineAsmArch::XCore => {
             let mut map = xcore::regclass_map();
-            XCore::fill_reg_map(arch, has_feature, target, &mut map);
+            xcore::fill_reg_map(arch, has_feature, target, &mut map);
             map
         }
         InlineAsmArch::X86 | InlineAsmArch::X86_64 => {
