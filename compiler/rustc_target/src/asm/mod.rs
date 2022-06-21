@@ -146,6 +146,7 @@ macro_rules! types {
     };
 }
 
+mod xcore;
 mod aarch64;
 mod arm;
 mod avr;
@@ -160,6 +161,7 @@ mod spirv;
 mod wasm;
 mod x86;
 
+pub use xcore::{XCoreInlineAsmReg, XCoreInlineAsmRegClass};
 pub use aarch64::{AArch64InlineAsmReg, AArch64InlineAsmRegClass};
 pub use arm::{ArmInlineAsmReg, ArmInlineAsmRegClass};
 pub use avr::{AvrInlineAsmReg, AvrInlineAsmRegClass};
@@ -176,6 +178,7 @@ pub use x86::{X86InlineAsmReg, X86InlineAsmRegClass};
 
 #[derive(Copy, Clone, Encodable, Decodable, Debug, Eq, PartialEq, Hash)]
 pub enum InlineAsmArch {
+    XCore,
     X86,
     X86_64,
     Arm,
@@ -201,6 +204,7 @@ impl FromStr for InlineAsmArch {
 
     fn from_str(s: &str) -> Result<InlineAsmArch, ()> {
         match s {
+            "xcore" => Ok(Self::XCore),
             "x86" => Ok(Self::X86),
             "x86_64" => Ok(Self::X86_64),
             "arm" => Ok(Self::Arm),
@@ -237,6 +241,7 @@ impl FromStr for InlineAsmArch {
     HashStable_Generic
 )]
 pub enum InlineAsmReg {
+    X86(XCoreInlineAsmReg),
     X86(X86InlineAsmReg),
     Arm(ArmInlineAsmReg),
     AArch64(AArch64InlineAsmReg),
@@ -257,6 +262,7 @@ pub enum InlineAsmReg {
 impl InlineAsmReg {
     pub fn name(self) -> &'static str {
         match self {
+            Self::XCore(r) => r.name(),
             Self::X86(r) => r.name(),
             Self::Arm(r) => r.name(),
             Self::AArch64(r) => r.name(),
@@ -273,6 +279,7 @@ impl InlineAsmReg {
 
     pub fn reg_class(self) -> InlineAsmRegClass {
         match self {
+            Self::XCore(r) => InlineAsmRegClass::XCore(r.reg_class()),
             Self::X86(r) => InlineAsmRegClass::X86(r.reg_class()),
             Self::Arm(r) => InlineAsmRegClass::Arm(r.reg_class()),
             Self::AArch64(r) => InlineAsmRegClass::AArch64(r.reg_class()),
@@ -297,6 +304,9 @@ impl InlineAsmReg {
         // Use `Symbol::as_str` instead of `Symbol::with` here because `has_feature` may access `Symbol`.
         let name = name.as_str();
         Ok(match arch {
+            InlineAsmArch::XCore => {
+                Self::XCore(XCoreInlineAsmReg::parse(arch, has_feature, target, name)?)
+            }
             InlineAsmArch::X86 | InlineAsmArch::X86_64 => {
                 Self::X86(X86InlineAsmReg::parse(arch, has_feature, target, name)?)
             }
@@ -348,6 +358,7 @@ impl InlineAsmReg {
         modifier: Option<char>,
     ) -> fmt::Result {
         match self {
+            Self::XCore(r) => r.emit(out, arch, modifier),
             Self::X86(r) => r.emit(out, arch, modifier),
             Self::Arm(r) => r.emit(out, arch, modifier),
             Self::AArch64(r) => r.emit(out, arch, modifier),
@@ -364,6 +375,7 @@ impl InlineAsmReg {
 
     pub fn overlapping_regs(self, mut cb: impl FnMut(InlineAsmReg)) {
         match self {
+            Self::XCore(_) => cb(self),
             Self::X86(r) => r.overlapping_regs(|r| cb(Self::X86(r))),
             Self::Arm(r) => r.overlapping_regs(|r| cb(Self::Arm(r))),
             Self::AArch64(_) => cb(self),
@@ -392,6 +404,7 @@ impl InlineAsmReg {
     HashStable_Generic
 )]
 pub enum InlineAsmRegClass {
+    XCore(XCoreInlineAsmRegClass),
     X86(X86InlineAsmRegClass),
     Arm(ArmInlineAsmRegClass),
     AArch64(AArch64InlineAsmRegClass),
@@ -412,6 +425,7 @@ pub enum InlineAsmRegClass {
 impl InlineAsmRegClass {
     pub fn name(self) -> Symbol {
         match self {
+            Self::XCore(r) => r.name(),
             Self::X86(r) => r.name(),
             Self::Arm(r) => r.name(),
             Self::AArch64(r) => r.name(),
@@ -434,6 +448,7 @@ impl InlineAsmRegClass {
     /// message to the user.
     pub fn suggest_class(self, arch: InlineAsmArch, ty: InlineAsmType) -> Option<Self> {
         match self {
+            Self::XCore(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::XCore),
             Self::X86(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::X86),
             Self::Arm(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::Arm),
             Self::AArch64(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::AArch64),
@@ -463,6 +478,7 @@ impl InlineAsmRegClass {
         ty: InlineAsmType,
     ) -> Option<(char, &'static str)> {
         match self {
+            Self::XCore(r) => r.suggest_modifier(arch, ty),
             Self::X86(r) => r.suggest_modifier(arch, ty),
             Self::Arm(r) => r.suggest_modifier(arch, ty),
             Self::AArch64(r) => r.suggest_modifier(arch, ty),
@@ -488,6 +504,7 @@ impl InlineAsmRegClass {
     /// warning.
     pub fn default_modifier(self, arch: InlineAsmArch) -> Option<(char, &'static str)> {
         match self {
+            Self::XCore(r) => r.default_modifier(arch),
             Self::X86(r) => r.default_modifier(arch),
             Self::Arm(r) => r.default_modifier(arch),
             Self::AArch64(r) => r.default_modifier(arch),
@@ -512,6 +529,7 @@ impl InlineAsmRegClass {
         arch: InlineAsmArch,
     ) -> &'static [(InlineAsmType, Option<&'static str>)] {
         match self {
+            Self::XCore(r) => r.supported_types(arch),
             Self::X86(r) => r.supported_types(arch),
             Self::Arm(r) => r.supported_types(arch),
             Self::AArch64(r) => r.supported_types(arch),
@@ -531,6 +549,7 @@ impl InlineAsmRegClass {
 
     pub fn parse(arch: InlineAsmArch, name: Symbol) -> Result<Self, &'static str> {
         Ok(match arch {
+            InlineAsmArch::XCore => Self::XCore(XCoreInlineAsmRegClass::parse(arch, name)?),
             InlineAsmArch::X86 | InlineAsmArch::X86_64 => {
                 Self::X86(X86InlineAsmRegClass::parse(arch, name)?)
             }
@@ -561,6 +580,7 @@ impl InlineAsmRegClass {
     /// register class.
     pub fn valid_modifiers(self, arch: InlineAsmArch) -> &'static [char] {
         match self {
+            Self::XCore(r) => r.valid_modifiers(arch),
             Self::X86(r) => r.valid_modifiers(arch),
             Self::Arm(r) => r.valid_modifiers(arch),
             Self::AArch64(r) => r.valid_modifiers(arch),
@@ -699,6 +719,11 @@ pub fn allocatable_registers(
     target: &crate::spec::Target,
 ) -> FxHashMap<InlineAsmRegClass, FxHashSet<InlineAsmReg>> {
     match arch {
+        InlineAsmArch::XCore => {
+            let mut map = XCore::regclass_map();
+            XCore::fill_reg_map(arch, has_feature, target, &mut map);
+            map
+        }
         InlineAsmArch::X86 | InlineAsmArch::X86_64 => {
             let mut map = x86::regclass_map();
             x86::fill_reg_map(arch, has_feature, target, &mut map);
