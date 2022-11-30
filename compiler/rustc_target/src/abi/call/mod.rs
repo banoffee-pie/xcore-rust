@@ -3,6 +3,7 @@ use crate::abi::{HasDataLayout, TyAbiInterface, TyAndLayout};
 use crate::spec::{self, HasTargetSpec};
 use std::fmt;
 
+mod xcore;
 mod aarch64;
 mod amdgpu;
 mod arm;
@@ -674,6 +675,7 @@ impl<'a, Ty> FnAbi<'a, Ty> {
                     x86_64::compute_abi_info(cx, self);
                 }
             }
+            "xcore" => xcore::compute_abi_info(cx, self),
             "aarch64" => aarch64::compute_abi_info(cx, self),
             "amdgpu" => amdgpu::compute_abi_info(cx, self),
             "arm" => arm::compute_abi_info(cx, self),

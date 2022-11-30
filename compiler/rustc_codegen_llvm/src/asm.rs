@@ -301,6 +301,7 @@ impl<'ll, 'tcx> AsmBuilderMethods<'tcx> for Builder<'_, 'll, 'tcx> {
         constraints.append(&mut clobbers);
         if !options.contains(InlineAsmOptions::PRESERVES_FLAGS) {
             match asm_arch {
+                InlineAsmArch::XCore => {}
                 InlineAsmArch::AArch64 | InlineAsmArch::Arm => {
                     constraints.push("~{cc}".to_string());
                 }
@@ -625,6 +626,7 @@ fn reg_to_llvm(reg: InlineAsmRegOrRegClass, layout: Option<&TyAndLayout<'_>>) ->
             }
         }
         InlineAsmRegOrRegClass::RegClass(reg) => match reg {
+            InlineAsmRegClass::XCore(XCoreInlineAsmRegClass::reg) => "r",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::reg) => "r",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg) => "w",
             InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg_low16) => "x",
@@ -694,6 +696,7 @@ fn modifier_to_llvm(
     modifier: Option<char>,
 ) -> Option<char> {
     match reg {
+        InlineAsmRegClass::XCore(XCoreInlineAsmRegClass::reg) => None,
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::reg) => modifier,
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg)
         | InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg_low16) => {
@@ -775,6 +778,7 @@ fn modifier_to_llvm(
 /// the type is, as long as it is valid for the constraint code.
 fn dummy_output_type<'ll>(cx: &CodegenCx<'ll, '_>, reg: InlineAsmRegClass) -> &'ll Type {
     match reg {
+        InlineAsmRegClass::XCore(XCoreInlineAsmRegClass::reg) => cx.type_i32(),
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::reg) => cx.type_i32(),
         InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg)
         | InlineAsmRegClass::AArch64(AArch64InlineAsmRegClass::vreg_low16) => {

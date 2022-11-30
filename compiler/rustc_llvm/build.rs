@@ -71,7 +71,7 @@ fn main() {
     let is_crossed = target != host;
 
     let optional_components = &[
-	"xcore",
+        "xcore",
         "x86",
         "arm",
         "aarch64",
